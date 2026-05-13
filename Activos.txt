@@ -1,0 +1,10 @@
+ACCION,AAPL,Apple Inc,150.0
+ACCION,GOOGL,Alphabet Inc,2800.0
+CRIPTO,BTC,Bitcoin,45000.0
+CRIPTO,ETH,Ethereum,3200.0
+ACCION,MSFT,Microsoft Co,1200.0
+ACCION,NVDA,NVIDIA Corporation,2600.0
+ACCION,META,Meta Platforms Inc,830.0
+ACCION,KO,Coca-Cola Company,195.0
+ACCION,NFLX,Netflix, Inc.,282.0
+CRIPTO,BNB,Binance Coin,3600.0

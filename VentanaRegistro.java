@@ -40,7 +40,7 @@ public class VentanaRegistro extends JFrame {
         gbc.gridwidth = 2;
         panelPrincipal.add(lblTitulo, gbc);
 
-        // Nombre
+        // Nombre del cliente
         gbc.gridwidth = 1;
         gbc.gridy = 1;
         gbc.gridx = 0;
@@ -50,7 +50,7 @@ public class VentanaRegistro extends JFrame {
         gbc.gridx = 1;
         panelPrincipal.add(campNombre, gbc);
 
-        // Monto inicial
+        // Monto inicial del cliente
         gbc.gridy = 2;
         gbc.gridx = 0;
         panelPrincipal.add(new JLabel("Monto inicial ($):"), gbc);

@@ -1,7 +1,18 @@
+/**
+ * Ventana principal del sistema UPIITrade.
+ * Muestra la tabla de activos disponibles, el saldo del usuario y permite comprar o vender activos.
+ * Versión 2
+ * Enrique Meneses Reyes - Disenador de GUI
+ */
+
 package com.upiitrade.gui;
 
 import com.upiitrade.mercado.Mercado;
 import com.upiitrade.mercado.Activo;
+
+import com.upiitrade.control.SimboloNoValidoException;
+import com.upiitrade.control.FondosInsuficientesException;
+import com.upiitrade.control.InventarioInsuficienteException;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -10,11 +21,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-/**
- * Ventana principal del sistema UPIITrade.
- * Muestra la tabla de activos disponibles, el saldo del usuario y permite comprar o vender activos.
- * RefrescarDatos()
- */
 
 public class VentanaPrincipal extends JFrame {
 
@@ -72,11 +78,11 @@ public class VentanaPrincipal extends JFrame {
         panelInfo.add(lblSaldo);
         panelInfo.add(lblSaldoValor);
 
-        // Panel central: tabla de activos
+        // Panel central - tabla de activos
         // Columnas: Simbolo, Nombre, Precio
         String[] columnas = {"Simbolo", "Nombre del Activo", "Precio ($)"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
-            // Tabla de lectura el usuario no puede editar celdas
+            // Hacemos la tabla de solo lectura para que el usuario no edite celdas
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -122,7 +128,7 @@ public class VentanaPrincipal extends JFrame {
         panelAcciones.add(btnComprar);
         panelAcciones.add(btnVender);
 
-        // Listeners de los botones
+        // ---- Listeners de los botones ----
         btnComprar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -137,7 +143,7 @@ public class VentanaPrincipal extends JFrame {
             }
         });
 
-        // Ensamblado del layout principal
+        // ---- Ensamblado del layout principal ----
         setLayout(new BorderLayout());
         add(panelInfo, BorderLayout.NORTH);
         add(scrollTabla, BorderLayout.CENTER);
@@ -145,6 +151,7 @@ public class VentanaPrincipal extends JFrame {
     }
 
     // Refresca todos los datos de la pantalla leyendo el estado actual del Mercado.
+
     public void refrescarDatos() {
         SwingUtilities.invokeLater(() -> {
             Mercado mercado = Mercado.getInstancia();
@@ -168,7 +175,8 @@ public class VentanaPrincipal extends JFrame {
         });
     }
 
-    // Maneja el boton comprar
+    // Maneja el evento del boton "Comprar".
+
     private void manejarCompra() {
         int filaSeleccionada = tablaActivos.getSelectedRow();
 
@@ -188,13 +196,32 @@ public class VentanaPrincipal extends JFrame {
         // Obtener el simbolo del activo seleccionado
         String simbolo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
 
-        // Llamar al metodo que maneja las operaciones de compra
-        Mercado.getInstancia().comprar(simbolo, cantidad);
+        // Llamar al metodo del Alumno 5 que maneja las operaciones de compra.
+        try {
+            Mercado.getInstancia().comprar(simbolo, cantidad);
 
-        refrescarDatos();
+            // Refrescar para ver el saldo actualizado (solo si la compra tuvo exito)
+            refrescarDatos();
+
+        } catch (SimboloNoValidoException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Simbolo invalido",
+                JOptionPane.ERROR_MESSAGE
+            );
+        } catch (FondosInsuficientesException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Fondos insuficientes",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
-    // Maneja el evento del boton "Vender", obtiene el activo seleccionado en la tabla y ejecuta la venta
+    //Maneja el evento del boton "Vender".
+
     private void manejarVenta() {
         int filaSeleccionada = tablaActivos.getSelectedRow();
 
@@ -213,13 +240,32 @@ public class VentanaPrincipal extends JFrame {
 
         String simbolo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
 
-        // Llamar al metodo que maneja las operaciones de venta
-        Mercado.getInstancia().vender(simbolo, cantidad);
+        // Llamar al metodo del Alumno 5 que maneja las operaciones de venta. Mercado.vender() debe declarar "throws SimboloNoValidoException, InventarioInsuficienteException" y delegar en ProcesadorOrdenes.procesarVenta().
+        try {
+            Mercado.getInstancia().vender(simbolo, cantidad);
+            refrescarDatos();
 
-        refrescarDatos();
+        } catch (SimboloNoValidoException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Simbolo invalido",
+                JOptionPane.ERROR_MESSAGE
+            );
+        } catch (InventarioInsuficienteException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Inventario insuficiente",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
-    // Valida el campo de cantidad y regresa la cantidad como entero, o -1 si hay un error.
+    /**
+     * Lee y valida el campo de cantidad.
+     * Regresa la cantidad como entero, o -1 si hay un error.
+     */
     private int validarCantidad() {
         String texto = campCantidad.getText().trim();
 

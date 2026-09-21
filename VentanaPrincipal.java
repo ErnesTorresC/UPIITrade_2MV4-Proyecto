@@ -143,7 +143,7 @@ public class VentanaPrincipal extends JFrame {
             }
         });
 
-        // ---- Ensamblado del layout principal ----
+        // Ensamblado del layout principal
         setLayout(new BorderLayout());
         add(panelInfo, BorderLayout.NORTH);
         add(scrollTabla, BorderLayout.CENTER);

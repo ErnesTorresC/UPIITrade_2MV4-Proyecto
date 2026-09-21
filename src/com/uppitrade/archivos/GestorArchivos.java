@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 import com.upiitrade.modelos.Accion;
 import com.upiitrade.modelos.Criptomoneda;
-import com.upiitrade.motor.Mercado; 
+import com.upiitrade.comun.Mercado; 
 
 public class GestorArchivos {
 

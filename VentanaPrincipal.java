@@ -1,7 +1,12 @@
 package com.upiitrade.gui;
 
-import com.upiitrade.mercado.Mercado;
-import com.upiitrade.mercado.Activo;
+import com.upiitrade.comun.Mercado;
+import com.upiitrade.comun.ActivoFinanciero;
+import com.upiitrade.control.ProcesadorOrdenes;
+import com.upiitrade.control.SimboloNoValidoException;
+import com.upiitrade.control.FondosInsuficientesException;
+import com.upiitrade.control.InventarioInsuficienteException;
+import com.upiitrade.archivos.GestorArchivos;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,6 +19,7 @@ import java.util.List;
  * Ventana principal del sistema UPIITrade.
  * Muestra la tabla de activos disponibles, el saldo del usuario y permite comprar o vender activos.
  * RefrescarDatos()
+ * Versión 3
  */
 
 public class VentanaPrincipal extends JFrame {
@@ -32,6 +38,9 @@ public class VentanaPrincipal extends JFrame {
     // Botones de accion
     private JButton btnComprar;
     private JButton btnVender;
+    
+    // Instancia del modulo de control
+    private ProcesadorOrdenes procesador;
 
     public VentanaPrincipal() {
         setTitle("UPIITrade - Panel de Trading");
@@ -39,6 +48,8 @@ public class VentanaPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(600, 420));
+        
+        procesador = new ProcesadorOrdenes(new GestorArchivos());
 
         initComponentes();
 
@@ -150,18 +161,18 @@ public class VentanaPrincipal extends JFrame {
             Mercado mercado = Mercado.getInstancia();
 
             // Actualizar nombre y saldo del cliente
-            lblNombreValor.setText(mercado.getNombreCliente());
-            lblSaldoValor.setText(String.format("$%.2f", mercado.getSaldoCliente()));
+            lblNombreValor.setText(mercado.getNombreUsuario());
+            lblSaldoValor.setText(String.format("$%.2f", mercado.getSaldoUsuario()));
 
             // Limpiar y volver a llenar la tabla con los activos actuales
             modeloTabla.setRowCount(0);
 
-            List<Activo> activos = mercado.getActivos();
-            for (Activo activo : activos) {
+            List<ActivoFinanciero> activos = mercado.getActivos();
+            for (ActivoFinanciero activo : activos) {
                 Object[] fila = {
                     activo.getSimbolo(),
                     activo.getNombre(),
-                    String.format("%.2f", activo.getPrecio())
+                    String.format("%.2f", activo.getPrecioActual())
                 };
                 modeloTabla.addRow(fila);
             }
@@ -189,9 +200,17 @@ public class VentanaPrincipal extends JFrame {
         String simbolo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
 
         // Llamar al metodo que maneja las operaciones de compra
-        Mercado.getInstancia().comprar(simbolo, cantidad);
-
-        refrescarDatos();
+        try {
+            procesador.procesarCompra(simbolo, cantidad);
+            refrescarDatos();
+        } catch (SimboloNoValidoException | FondosInsuficientesException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     // Maneja el evento del boton "Vender", obtiene el activo seleccionado en la tabla y ejecuta la venta
@@ -214,9 +233,17 @@ public class VentanaPrincipal extends JFrame {
         String simbolo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
 
         // Llamar al metodo que maneja las operaciones de venta
-        Mercado.getInstancia().vender(simbolo, cantidad);
-
-        refrescarDatos();
+        try {
+            procesador.procesarVenta(simbolo, cantidad);
+            refrescarDatos();
+        } catch (SimboloNoValidoException | InventarioInsuficienteException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     // Valida el campo de cantidad y regresa la cantidad como entero, o -1 si hay un error.

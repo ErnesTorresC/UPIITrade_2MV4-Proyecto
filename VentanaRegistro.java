@@ -1,6 +1,6 @@
 package com.upiitrade.gui;
 
-import com.upiitrade.mercado.Mercado;
+import com.upiitrade.comun.Mercado;
 
 import javax.swing.*;
 import java.awt.*;
